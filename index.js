@@ -34,7 +34,6 @@ async function run() {
       res.send(result);
     });
 
-
     app.get("/addrecipes/:id", async (req, res) => {
       const id = req.params.id;
       const quary = { _id: new ObjectId(id) };
@@ -60,7 +59,13 @@ async function run() {
       res.send(result);
     });
 
-  
+    // Get recipes for a specific user
+    app.get("/myrecipes/:email", async (req, res) => {
+      const userEmail = req.params.email;
+      const query = { userEmail: userEmail }; 
+      const result = await recipesCollection.find(query).toArray();
+      res.send(result);
+    });
 
     //  ================User related API ================
 
