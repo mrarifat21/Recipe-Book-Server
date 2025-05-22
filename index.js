@@ -27,6 +27,7 @@ async function run() {
     await client.connect();
 
     const recipesCollection = client.db("recipeDB").collection("addrecipes");
+    const userCollection = client.db("recipeDB").collection("users");
 
     app.get("/addrecipes", async (req, res) => {
       const result = await recipesCollection.find().toArray();
@@ -58,6 +59,18 @@ async function run() {
       const result = await recipesCollection.insertOne(newRecipe);
       res.send(result);
     });
+
+
+    //  ================User related API ================
+
+    //  get user form db
+    app.get('/users', async (req,res)=>{
+      const result = await userCollection.find().toArray();
+      req.send(result);
+    })
+
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
