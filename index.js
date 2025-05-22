@@ -34,6 +34,7 @@ async function run() {
       res.send(result);
     });
 
+
     app.get("/addrecipes/:id", async (req, res) => {
       const id = req.params.id;
       const quary = { _id: new ObjectId(id) };
@@ -41,7 +42,6 @@ async function run() {
       res.send(result);
     });
 
-   
     app.patch("/addrecipes/like/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -60,17 +60,22 @@ async function run() {
       res.send(result);
     });
 
+  
 
     //  ================User related API ================
 
     //  get user form db
-    app.get('/users', async (req,res)=>{
+    app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
-      req.send(result);
-    })
+      res.send(result);
+    });
 
-
-
+    app.post("/users", async (req, res) => {
+      const userProfile = req.body;
+      console.log(userProfile);
+      const result = await userCollection.insertOne(userProfile);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
