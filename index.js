@@ -23,7 +23,6 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
 
     const recipesCollection = client.db("recipeDB").collection("addrecipes");
@@ -51,25 +50,37 @@ async function run() {
       res.send({ message: "Like count updated successfully.", result });
     });
 
-    //  Add a new recipe to the database
+    //  ====Add a new recipe to the database====
     app.post("/addrecipes", async (req, res) => {
       const newRecipe = req.body;
-      // console.log("Adding new recipe:", newRecipe);
       const result = await recipesCollection.insertOne(newRecipe);
       res.send(result);
     });
 
-    // Get recipes for a specific user
+
+    // =====Update a recipe======
+    app.put("/addrecipes/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedRecipe = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = { $set: updatedRecipe };
+
+      await recipesCollection.updateOne(filter, updateDoc);
+      const updated = await recipesCollection.findOne(filter); 
+      res.send(updated); 
+    });
+
+    // ====Get recipes for a specific user=====
     app.get("/myrecipes/:email", async (req, res) => {
       const userEmail = req.params.email;
-      const query = { userEmail: userEmail }; 
+      const query = { userEmail: userEmail };
       const result = await recipesCollection.find(query).toArray();
       res.send(result);
     });
 
     //  ================User related API ================
 
-    //  get user form db
+    //  ====get user form db=====
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
@@ -77,7 +88,6 @@ async function run() {
 
     app.post("/users", async (req, res) => {
       const userProfile = req.body;
-      // console.log(userProfile);
       const result = await userCollection.insertOne(userProfile);
       res.send(result);
     });
