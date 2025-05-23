@@ -10,7 +10,7 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// ==========
+
 const uri = `mongodb+srv://${process.env.TUSER}:${process.env.TPASS}@tastelog01.h0mab5r.mongodb.net/?retryWrites=true&w=majority&appName=tastelog01`;
 
 const client = new MongoClient(uri, {
@@ -28,11 +28,34 @@ async function run() {
     const recipesCollection = client.db("recipeDB").collection("addrecipes");
     const userCollection = client.db("recipeDB").collection("users");
 
+     //  ==================================
+     //      Recipe related APIs
+     //  ==================================
+
+    //  ========Add a new recipe to the database========
+    app.post("/addrecipes", async (req, res) => {
+      const newRecipe = req.body;
+      const result = await recipesCollection.insertOne(newRecipe);
+      res.send(result);
+    });
+    
     app.get("/addrecipes", async (req, res) => {
       const result = await recipesCollection.find().toArray();
       res.send(result);
     });
 
+
+    // ======== sort  top 6 recipe ========
+    app.get("/top-recipe", async (req, res) => {
+      const result = await recipesCollection
+          .find()
+          .sort({ likecount: -1 })
+          .limit(6)
+          .toArray();
+        res.send(result);
+    });
+
+    
     app.get("/addrecipes/:id", async (req, res) => {
       const id = req.params.id;
       const quary = { _id: new ObjectId(id) };
@@ -40,6 +63,7 @@ async function run() {
       res.send(result);
     });
 
+    //  ======== increase like count ========
     app.patch("/addrecipes/like/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -50,15 +74,9 @@ async function run() {
       res.send({ message: "Like count updated successfully.", result });
     });
 
-    //  ====Add a new recipe to the database====
-    app.post("/addrecipes", async (req, res) => {
-      const newRecipe = req.body;
-      const result = await recipesCollection.insertOne(newRecipe);
-      res.send(result);
-    });
 
 
-    // =====Update a recipe======
+    // ======== Update a recipe ========
     app.put("/addrecipes/:id", async (req, res) => {
       const id = req.params.id;
       const updatedRecipe = req.body;
@@ -66,19 +84,19 @@ async function run() {
       const updateDoc = { $set: updatedRecipe };
 
       await recipesCollection.updateOne(filter, updateDoc);
-      const updated = await recipesCollection.findOne(filter); 
-      res.send(updated); 
+      const updated = await recipesCollection.findOne(filter);
+      res.send(updated);
     });
 
-    //  =======Delete a recipe======
-    app.delete("/addrecipes/:id", async(req,res)=>{
-      const id =req.params.id;
-      const query = {_id: new ObjectId(id)}
+    //  ======== Delete a recipe ========
+    app.delete("/addrecipes/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
       const result = await recipesCollection.deleteOne(query);
-      res.send(result)
-    })
+      res.send(result);
+    });
 
-    // ====Get recipes for a specific user=====
+    // ======== Get recipes for a specific user ========
     app.get("/myrecipes/:email", async (req, res) => {
       const userEmail = req.params.email;
       const query = { userEmail: userEmail };
@@ -86,9 +104,11 @@ async function run() {
       res.send(result);
     });
 
-    //  ================User related API ================
+      //  ==================================
+      //      User related APIs
+      //  ==================================
 
-    //  ====get user form db=====
+    //  ========get user form db========
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
@@ -112,7 +132,7 @@ async function run() {
 }
 run().catch(console.dir);
 
-// ========
+
 
 app.get("/", (req, res) => {
   res.send("Your food is cooking");
